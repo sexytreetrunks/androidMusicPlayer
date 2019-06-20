@@ -29,4 +29,11 @@ public class ExampleInstrumentedTest {
 
         assertEquals("com.proto.musicplayerproto1", appContext.getPackageName());
     }
+
+    @Test
+    public void dbtest() {
+        Context context = InstrumentationRegistry.getTargetContext();
+        ArrayList<Music> list = new MusicSourceHelper(context.getContentResolver()).getAllMusicList();
+        Log.d("**","list size: "+list.size());
+    }
 }
