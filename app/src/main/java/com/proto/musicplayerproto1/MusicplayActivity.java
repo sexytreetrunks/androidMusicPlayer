@@ -15,8 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.proto.musicplayerproto1.data.MusicSourceHelper;
+import com.proto.musicplayerproto1.player.PlayerHolder;
+import com.proto.musicplayerproto1.player.PlayerState;
 
 public class MusicplayActivity extends AppCompatActivity {
+    private PlayerHolder player;
     private ImageView iv_albumcover;
     private TextView tv_title;
     private TextView tv_artist;
@@ -49,6 +52,26 @@ public class MusicplayActivity extends AppCompatActivity {
         tv_artist.setSelected(true);
         tv_albumtitle.setText(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
         tv_artist.setSelected(true);
+        player = new PlayerHolder(this, new PlayerState(), music);
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        player.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        player.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        player.release();
     }
 
     private void checkPermissions() {
