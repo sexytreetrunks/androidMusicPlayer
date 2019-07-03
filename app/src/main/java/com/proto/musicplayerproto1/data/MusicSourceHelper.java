@@ -1,27 +1,31 @@
 package com.proto.musicplayerproto1.data;
 
+import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.ShuffleOrder;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class MusicSourceHelper {
     private ContentResolver contentResolver;
     private static final Uri contentRootUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+    private static final String albumArtUriString = "content://media/external/audio/albumart/";
 
     public MusicSourceHelper(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
     }
 
-    public ArrayList<Music> getAllMusicList() {
-        ArrayList<Music> musiclist = new ArrayList<>();
+    public ArrayList<MediaMetadataCompat> getAllMusicList() {
+        ArrayList<MediaMetadataCompat> musiclist = new ArrayList<>();
         String[] projection = {
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
@@ -43,16 +47,17 @@ public class MusicSourceHelper {
                 String musicpath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                 Uri musicUri = ContentUris.withAppendedId(contentRootUri, Integer.parseInt(musicid));
                 long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
-                Music music = new Music();
-                music.setId(musicid);
-                music.setTitle(title);
-                music.setArtist(artist);
-                music.setAlbumTitle(album);
-                music.setAlbumPath(albumpath);
-                music.setFilepath(musicpath);
-                music.setUriStr(musicUri.toString());
-                music.setDuration(duration);
-                musiclist.add(music);
+                MediaMetadataCompat media = new MediaMetadataCompat.Builder()
+                                                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, musicid)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, title)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, albumpath)
+                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, musicUri.toString())
+                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                        .build();
+                musiclist.add(media);
             }
         }
         return musiclist;
@@ -63,13 +68,16 @@ public class MusicSourceHelper {
         String[] projection = {MediaStore.Audio.Albums.ALBUM_ART};
         String selection = MediaStore.Audio.Albums._ID + "= ?";
         String[] selectionArgs = {album_id};
-        String path = "";
+        String path = null;
         Cursor cursor = contentResolver.query(album_uri, projection, selection, selectionArgs, null);
         if(cursor!=null) {
             if(cursor.moveToNext()) {
                 path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
             }
         }
-        return path;
+        if(path!=null)
+            return albumArtUriString + album_id;
+        else
+            return null;
     }
 }

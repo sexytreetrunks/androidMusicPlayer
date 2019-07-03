@@ -4,6 +4,7 @@ android {
     compileSdkVersion 28
     compileOptions {
         targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
     defaultConfig {
         applicationId "com.proto.musicplayerproto1"

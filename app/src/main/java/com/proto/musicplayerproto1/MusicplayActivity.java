@@ -4,7 +4,9 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.proto.musicplayerproto1.data.Music;
 import com.proto.musicplayerproto1.data.MusicSourceHelper;
 
 public class MusicplayActivity extends AppCompatActivity {
@@ -28,6 +29,7 @@ public class MusicplayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_musicplay);
 
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             checkPermissions();
         }
@@ -35,18 +37,17 @@ public class MusicplayActivity extends AppCompatActivity {
         tv_title = (TextView)findViewById(R.id.title);
         tv_artist = (TextView)findViewById(R.id.artist);
         tv_albumtitle = (TextView)findViewById(R.id.album_title);
-        Music music = new MusicSourceHelper(getContentResolver()).getAllMusicList().get(13);
-        if(music.getAlbumPath()==null)
+        MediaMetadataCompat music = new MusicSourceHelper(getContentResolver()).getAllMusicList().get(10);
+        if(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)==null)
             iv_albumcover.setImageResource(R.drawable.no_cover);
         else {
-            Bitmap bitmap = BitmapFactory.decodeFile(music.getAlbumPath());
-            iv_albumcover.setImageBitmap(bitmap);
+            iv_albumcover.setImageURI(Uri.parse(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)));
         }
-        tv_title.setText(music.getTitle());
+        tv_title.setText(music.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
         tv_title.setSelected(true);
-        tv_artist.setText(music.getArtist());
+        tv_artist.setText(music.getString(MediaMetadataCompat.METADATA_KEY_ARTIST));
         tv_artist.setSelected(true);
-        tv_albumtitle.setText(music.getAlbumTitle());
+        tv_albumtitle.setText(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
         tv_artist.setSelected(true);
     }
 
