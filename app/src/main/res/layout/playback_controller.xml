@@ -87,7 +87,7 @@
             style="@style/ExoMediaButton.Next" />
 
         <ImageButton
-            android:id="@+id/btn_loop"
+            android:id="@+id/exo_repeat_toggle"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
             android:layout_weight="1"

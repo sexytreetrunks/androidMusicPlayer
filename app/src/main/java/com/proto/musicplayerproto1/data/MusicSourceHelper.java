@@ -50,13 +50,16 @@ public class MusicSourceHelper {
                 MediaMetadataCompat media = new MediaMetadataCompat.Builder()
                                                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, musicid)
                                                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
-                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, title)
-                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
-                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
-                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, albumpath)
-                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, musicUri.toString())
-                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-                        .build();
+                                                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, title)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,artist)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, album)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, musicUri.toString())
+                                                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, albumpath)
+                                                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, albumpath)
+                                                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                                                .build();
                 musiclist.add(media);
             }
         }
