@@ -52,6 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="30dp"
             android:layout_weight="1"
+            android:onClick="onPlaybackControlBtnClick"
             android:tint="@color/playcontroller_btn_color" />
 
         <ImageButton
@@ -60,6 +61,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:tint="@color/playcontroller_btn_color"
+            android:onClick="onPlaybackControlBtnClick"
             style="@style/ExoMediaButton.Previous"/>
 
         <ImageButton
@@ -68,6 +70,8 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:tint="@color/playcontroller_btn_color"
+            android:onClick="onPlaybackControlBtnClick"
+            android:visibility="gone"
             style="@style/ExoMediaButton.Play"/>
 
         <ImageButton
@@ -76,6 +80,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:tint="@color/playcontroller_btn_color"
+            android:onClick="onPlaybackControlBtnClick"
             style="@style/ExoMediaButton.Pause"/>
 
         <ImageButton
@@ -84,6 +89,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:tint="@color/playcontroller_btn_color"
+            android:onClick="onPlaybackControlBtnClick"
             style="@style/ExoMediaButton.Next" />
 
         <ImageButton
@@ -92,6 +98,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:tint="@color/playcontroller_btn_color"
+            android:onClick="onPlaybackControlBtnClick"
             style="@style/ExoMediaButton.Rewind"/>
     </LinearLayout>
 

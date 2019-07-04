@@ -3,6 +3,7 @@ package com.proto.musicplayerproto1.player;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
@@ -13,10 +14,15 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * 비디오 플레이어 컨트롤 담당(플레이어와 UI간 통신 담당)
@@ -25,12 +31,12 @@ public class PlayerHolder {
     private Context context;
     private PlayerState playerState;
     private SimpleExoPlayer player;
-    private MediaMetadataCompat playSrc;// MediaMetadataCompat or Arraylist<MediaMetadataCompat>
+    private List<MediaMetadataCompat> playSrc;// MediaMetadataCompat or Arraylist<MediaMetadataCompat>
 
     private static final String UI_LOG_TAG = "**PlayerHolder Func call";
     private static final String PLAYER_LOG_TAG = "**Player status";
 
-    public PlayerHolder(Context context, PlayerState playerState, MediaMetadataCompat playSrc) {
+    public PlayerHolder(Context context, PlayerState playerState, List<MediaMetadataCompat> playSrc) {
         this.context = context;
         this.playerState = playerState;
         this.playSrc = playSrc;
@@ -42,6 +48,7 @@ public class PlayerHolder {
                                                     .build();
         player = ExoPlayerFactory.newSimpleInstance(context, new DefaultTrackSelector());
         player.setAudioAttributes(audioAttributes, true);
+        player.setRepeatMode(Player.REPEAT_MODE_ALL);
     }
 
     public Player getPlayer() {
@@ -58,12 +65,20 @@ public class PlayerHolder {
         Log.i(UI_LOG_TAG,"start func call");
     }
 
-    private MediaSource buildMediaSource(MediaMetadataCompat playSrcList) {
-        return createExtractorMediaSource(Uri.parse(playSrcList.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)));
+    private MediaSource buildMediaSource(List<MediaMetadataCompat> playSrcList) {
+        List<MediaSource> uriList = new ArrayList<MediaSource>();
+        for(MediaMetadataCompat m: playSrcList) {
+            uriList.add(createExtractorMediaSource(Uri.parse(m.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)), m.getDescription()));
+        }
+        ConcatenatingMediaSource concatenatingMediaSource = new ConcatenatingMediaSource();
+        concatenatingMediaSource.addMediaSources(uriList);
+        return (new LoopingMediaSource(concatenatingMediaSource));
     }
 
-    private MediaSource createExtractorMediaSource(Uri mediaUri) {
-        return new ExtractorMediaSource.Factory(new DefaultDataSourceFactory(context, "exoplayer-learning")).createMediaSource(mediaUri);
+    private MediaSource createExtractorMediaSource(Uri mediaUri, MediaDescriptionCompat description) {
+        return new ExtractorMediaSource.Factory(new DefaultDataSourceFactory(context, "exoplayer-learning"))
+                .setTag(description)
+                .createMediaSource(mediaUri);
     }
 
     public void stop() {
