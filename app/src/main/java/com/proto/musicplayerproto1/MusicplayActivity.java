@@ -141,36 +141,6 @@ public class MusicplayActivity extends AppCompatActivity {
             Log.e(PERMITION_LOG_TAG, "permission deny");
         }
     }
-
-    public void onPlaybackControlBtnClick(View v) {
-        if(mController != null) {
-            switch (v.getId()) {
-                case R.id.exo_playpause:
-                    if(viewModel.getIsPlaying().getValue())
-                        mController.getTransportControls().pause();
-                    else
-                        mController.getTransportControls().play();
-                    break;
-                case R.id.exo_next:
-                    mController.getTransportControls().skipToNext();
-                    break;
-                case R.id.exo_prev:
-                    mController.getTransportControls().skipToPrevious();
-                    break;
-                case R.id.exo_shuffle:
-                    if(mController.getShuffleMode()== PlaybackStateCompat.SHUFFLE_MODE_NONE)
-                        mController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
-                    else
-                        mController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
-                    break;
-                case R.id.exo_repeat_toggle:
-                    if(mController.getRepeatMode()== PlaybackStateCompat.REPEAT_MODE_ALL)
-                        mController.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ONE);
-                    else
-                        mController.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL);
-            }
-        }
-    }
 }
 
 

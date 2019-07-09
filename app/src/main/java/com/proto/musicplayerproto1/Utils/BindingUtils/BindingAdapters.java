@@ -2,7 +2,7 @@ package com.proto.musicplayerproto1.Utils.BindingUtils;
 
 import android.databinding.BindingAdapter;
 import android.net.Uri;
-import android.util.Log;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -27,12 +27,20 @@ public class BindingAdapters {
     }
 
     @BindingAdapter("app:duration")
-    public static void setDuration(DefaultTimeBar timeBar, Long duration) {
+    public static void setDuration(DefaultTimeBar timeBar, long duration) {
         timeBar.setDuration(duration);
     }
 
     @BindingAdapter("app:progress")
-    public static void setProgress(DefaultTimeBar timeBar, Long position) {
+    public static void setProgress(DefaultTimeBar timeBar, long position) {
         timeBar.setPosition(position);
+    }
+
+    @BindingAdapter("app:repeatModeIcon")
+    public static void repeatModeIcon(ImageButton button, int repeatMode) {
+        if(repeatMode== PlaybackStateCompat.REPEAT_MODE_ALL)
+            button.setImageResource(R.drawable.exo_controls_repeat_all);
+        else if(repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE)
+            button.setImageResource(R.drawable.exo_controls_repeat_one);
     }
 }

@@ -9,29 +9,29 @@ import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
+import android.view.View;
 
-import com.google.android.exoplayer2.ui.DefaultTimeBar;
-import com.proto.musicplayerproto1.Utils.TimeUtils;
+import com.proto.musicplayerproto1.R;
 import com.proto.musicplayerproto1.model.data.DisplayMetadata;
+import com.proto.musicplayerproto1.model.data.DisplayPlaybackState;
 
-
-//여기 UI관련 코드들 다 들어가있어야함
 public class MusicplayViewModel extends AndroidViewModel {
     private MediaControllerCompat mController;
     private MutableLiveData<DisplayMetadata> nowMediaMetadata;
-    private MutableLiveData<Boolean> isPlaying;
+    private MutableLiveData<DisplayPlaybackState> nowPlaybackState;
     private MutableLiveData<Long> position;
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
+
+    private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
 
     public MusicplayViewModel(@NonNull Application application, MediaControllerCompat mController) {
         super(application);
         this.mController = mController;
         this.mController.registerCallback(new MediaControllerCallback());
         nowMediaMetadata = new MutableLiveData<>();
-        isPlaying = new MutableLiveData<>();
-        isPlaying.postValue(true);
+        nowPlaybackState = new MutableLiveData<>();
+        nowPlaybackState.postValue(DEFAULT_PLAYBACK_STATE);
         position = new MutableLiveData<>();
         position.postValue(0L);
         changePlaybackPosition();
@@ -41,12 +41,12 @@ public class MusicplayViewModel extends AndroidViewModel {
         return nowMediaMetadata;
     }
 
-    public MutableLiveData<Boolean> getIsPlaying() {
-        return isPlaying;
-    }
-
     public MutableLiveData<Long> getPosition() {
         return position;
+    }
+
+    public MutableLiveData<DisplayPlaybackState> getNowPlaybackState() {
+        return nowPlaybackState;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class MusicplayViewModel extends AndroidViewModel {
             @Override
             public void run() {
                 long curpos = mController.getPlaybackState().getPosition();
-                if(isPlaying.getValue()) {
+                if(nowPlaybackState.getValue().isPlaying()) {
                     position.postValue(curpos);
                 }
                 if(updatePosition)
@@ -69,15 +69,62 @@ public class MusicplayViewModel extends AndroidViewModel {
         },100L);
     }
 
+    public void onPlaybackControlBtnClick(View v) {
+        if(mController != null) {
+            switch (v.getId()) {
+                case R.id.exo_playpause:
+                    if(nowPlaybackState.getValue().isPlaying())
+                        mController.getTransportControls().pause();
+                    else
+                        mController.getTransportControls().play();
+                    break;
+                case R.id.exo_next:
+                    mController.getTransportControls().skipToNext();
+                    break;
+                case R.id.exo_prev:
+                    mController.getTransportControls().skipToPrevious();
+                    break;
+                case R.id.exo_shuffle:
+                    if(mController.getShuffleMode()== PlaybackStateCompat.SHUFFLE_MODE_NONE)
+                        mController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
+                    else
+                        mController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
+                    break;
+                case R.id.exo_repeat_toggle:
+                    mController.getTransportControls().setRepeatMode((mController.getRepeatMode()+1)%3);
+            }
+        }
+    }
+
     private class MediaControllerCallback extends MediaControllerCompat.Callback {
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             super.onPlaybackStateChanged(state);
+            DisplayPlaybackState displaystate = nowPlaybackState.getValue();
             if(state.getState()==PlaybackStateCompat.STATE_PLAYING || state.getState()==PlaybackStateCompat.STATE_BUFFERING)
-                isPlaying.postValue(true);
+                displaystate.setPlaying(true);
             else
-                isPlaying.postValue(false);
-            Log.d("**","change isPlaying: "+isPlaying.getValue());
+                displaystate.setPlaying(false);
+            nowPlaybackState.postValue(displaystate);
+        }
+
+        @Override
+        public void onRepeatModeChanged(int repeatMode) {
+            super.onRepeatModeChanged(repeatMode);
+            DisplayPlaybackState displaystate = nowPlaybackState.getValue();
+            displaystate.setRepeatMode(repeatMode);
+            nowPlaybackState.postValue(displaystate);
+        }
+
+        @Override
+        public void onShuffleModeChanged(int shuffleMode) {
+            super.onShuffleModeChanged(shuffleMode);
+            DisplayPlaybackState displaystate = nowPlaybackState.getValue();
+            if(shuffleMode==PlaybackStateCompat.SHUFFLE_MODE_NONE)
+                displaystate.setShuffle(false);
+            else
+                displaystate.setShuffle(true);
+            nowPlaybackState.postValue(displaystate);
         }
 
         @Override
@@ -93,10 +140,10 @@ public class MusicplayViewModel extends AndroidViewModel {
                 );
                 nowMediaMetadata.postValue(nowPlayingData);
                 position.postValue(0L);
-                if((mController.getPlaybackState().getState() & PlaybackStateCompat.STATE_PAUSED)!=0) {
-                    mController.getTransportControls().play();
-                    isPlaying.postValue(true);
-                }
+                mController.getTransportControls().play();
+                DisplayPlaybackState displaystate = nowPlaybackState.getValue();
+                displaystate.setPlaying(true);
+                nowPlaybackState.postValue(displaystate);
             }
         }
     }

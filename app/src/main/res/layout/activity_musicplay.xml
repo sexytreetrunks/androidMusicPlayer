@@ -85,9 +85,7 @@
         <include
             android:id="@+id/playback_controller"
             layout="@layout/playback_controller"
-            bind:duration="@{viewModel.nowMediaMetadata.duration}"
-            bind:curpos="@{viewModel.position}"
-            bind:isPlaying="@{viewModel.isPlaying}"
+            bind:viewModel="@{viewModel}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

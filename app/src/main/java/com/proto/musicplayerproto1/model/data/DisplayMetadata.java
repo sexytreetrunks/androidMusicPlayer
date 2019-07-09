@@ -5,9 +5,9 @@ public class DisplayMetadata {
     private String title;
     private String artist;
     private String album;
-    private Long duration;
+    private long duration;
 
-    public DisplayMetadata(String albumArtUri, String title, String artist, String album, Long duration) {
+    public DisplayMetadata(String albumArtUri, String title, String artist, String album, long duration) {
         this.albumArtUri = albumArtUri;
         this.title = title;
         this.artist = artist;
@@ -47,11 +47,11 @@ public class DisplayMetadata {
         this.artist = artist;
     }
 
-    public Long getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 }

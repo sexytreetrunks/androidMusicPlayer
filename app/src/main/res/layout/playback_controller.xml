@@ -3,15 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="com.proto.musicplayerproto1.Utils.TimeUtils" />
+        <import type="android.support.v4.media.session.PlaybackStateCompat" />
         <variable
-            name="duration"
-            type="long" />
-        <variable
-            name="curpos"
-            type="long" />
-        <variable
-            name="isPlaying"
-            type="boolean" />
+            name="viewModel"
+            type="com.proto.musicplayerproto1.viewmodel.MusicplayViewModel" />
     </data>
 
     <LinearLayout
@@ -37,15 +32,15 @@
                 android:textSize="16dp"
                 android:layout_marginLeft="10dp"
                 android:padding="4dp"
-                android:text="@{TimeUtils.formatTimeTommss(curpos)}" />
+                android:text="@{TimeUtils.formatTimeTommss(viewModel.position)}" />
 
             <com.google.android.exoplayer2.ui.DefaultTimeBar
                 android:id="@+id/exo_progress"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_weight="1"
-                app:duration="@{duration}"
-                app:progress="@{curpos}"
+                app:duration="@{viewModel.nowMediaMetadata.duration}"
+                app:progress="@{viewModel.position}"
                 app:unplayed_color="@color/gray"
                 app:played_color="@color/progress_color"
                 app:scrubber_color="@color/playcontroller_btn_color" />
@@ -57,7 +52,7 @@
                 android:textSize="16dp"
                 android:padding="4dp"
                 android:layout_marginRight="10dp"
-                android:text="@{TimeUtils.formatTimeTommss(duration)}" />
+                android:text="@{TimeUtils.formatTimeTommss(viewModel.nowMediaMetadata.duration)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -71,8 +66,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:layout_weight="1"
-                android:onClick="onPlaybackControlBtnClick"
-                android:tint="@color/playcontroller_btn_color" />
+                android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
+                android:tint="@{viewModel.nowPlaybackState.isShuffle? @color/playcontroller_btn_color : @color/gray}" />
 
             <ImageButton
                 android:id="@+id/exo_prev"
@@ -80,7 +75,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:tint="@color/playcontroller_btn_color"
-                android:onClick="onPlaybackControlBtnClick"
+                android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
                 style="@style/ExoMediaButton.Previous" />
 
             <ImageButton
@@ -89,8 +84,8 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:tint="@color/playcontroller_btn_color"
-                android:onClick="onPlaybackControlBtnClick"
-                app:playIcon="@{isPlaying}"
+                android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
+                app:playIcon="@{viewModel.nowPlaybackState.isPlaying}"
                 style="@style/ExoMediaButton.Pause" />
 
             <ImageButton
@@ -99,7 +94,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:tint="@color/playcontroller_btn_color"
-                android:onClick="onPlaybackControlBtnClick"
+                android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
                 style="@style/ExoMediaButton.Next" />
 
             <ImageButton
@@ -107,8 +102,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:layout_weight="1"
-                android:tint="@color/playcontroller_btn_color"
-                android:onClick="onPlaybackControlBtnClick"
+                android:tint="@{viewModel.nowPlaybackState.repeatMode==PlaybackStateCompat.REPEAT_MODE_NONE? @color/gray : @color/playcontroller_btn_color}"
+                android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
+                app:repeatModeIcon="@{viewModel.nowPlaybackState.repeatMode}"
                 style="@style/ExoMediaButton.Rewind" />
         </LinearLayout>
 
