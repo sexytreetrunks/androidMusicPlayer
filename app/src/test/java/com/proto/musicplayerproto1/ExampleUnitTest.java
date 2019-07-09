@@ -1,11 +1,8 @@
 package com.proto.musicplayerproto1;
 
 import com.proto.musicplayerproto1.data.Music;
-import com.proto.musicplayerproto1.data.MusicSourceHelper;
 
 import org.junit.Test;
-
-import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 

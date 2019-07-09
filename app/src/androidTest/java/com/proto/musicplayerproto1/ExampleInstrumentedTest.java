@@ -9,13 +9,11 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
 import com.proto.musicplayerproto1.data.Music;
-import com.proto.musicplayerproto1.data.MusicSourceHelper;
+import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;

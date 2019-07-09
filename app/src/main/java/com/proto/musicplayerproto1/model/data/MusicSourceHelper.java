@@ -1,4 +1,4 @@
-package com.proto.musicplayerproto1.data;
+package com.proto.musicplayerproto1.model.data;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -7,12 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaMetadataCompat;
-import android.util.Log;
 
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.ShuffleOrder;
-
-import java.io.File;
 import java.util.ArrayList;
 
 public class MusicSourceHelper {

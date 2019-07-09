@@ -2,10 +2,8 @@ package com.proto.musicplayerproto1;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.net.Uri;
+import android.databinding.DataBindingUtil;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -16,9 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.Player;
@@ -26,33 +21,25 @@ import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
 import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.TimeBar;
-import com.proto.musicplayerproto1.Utils.TimeUtils;
-import com.proto.musicplayerproto1.data.MusicSourceHelper;
-import com.proto.musicplayerproto1.player.PlayerHolder;
-import com.proto.musicplayerproto1.player.PlayerState;
+import com.proto.musicplayerproto1.databinding.ActivityMusicplayBinding;
+import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
+import com.proto.musicplayerproto1.model.player.PlayerHolder;
+import com.proto.musicplayerproto1.model.player.PlayerState;
+import com.proto.musicplayerproto1.viewmodel.CustomViewModelFactory;
+import com.proto.musicplayerproto1.viewmodel.MusicplayViewModel;
 
 import java.util.List;
 
 public class MusicplayActivity extends AppCompatActivity {
+    private MusicplayViewModel viewModel;
+
     private PlayerHolder player;
     //player를 UI화면을 통해 컨트롤하려면 아래 3개는 기본적으로 있어야함
     private MediaSessionCompat session;
     private MediaSessionConnector sessionConnector;
-    private MediaControllerCompat controller;
+    private MediaControllerCompat mController;
 
-    private ImageView iv_albumcover;
-    private TextView tv_title;
-    private TextView tv_artist;
-    private TextView tv_albumtitle;
-    private TextView tv_position;
-    private TextView tv_duration;
     private DefaultTimeBar timeBar;
-    private ImageButton btn_play;
-    private ImageButton btn_pause;
-
-    //progressbar ui 변경에 필요한 변수
-    private boolean updatePosition = true;
-    private Handler uiHandler = new Handler(Looper.getMainLooper());
 
     private static final String PERMITION_LOG_TAG = "**AppPermission";
     private final int MY_PERMISSION_REQUEST_STORAGE = 100;
@@ -65,15 +52,6 @@ public class MusicplayActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             checkPermissions();
         }
-        iv_albumcover = (ImageView)findViewById(R.id.album_cover);
-        tv_title = (TextView)findViewById(R.id.title);
-        tv_artist = (TextView)findViewById(R.id.artist);
-        tv_albumtitle = (TextView)findViewById(R.id.album_title);
-        tv_position = (TextView)findViewById(R.id.exo_position);
-        tv_duration = (TextView)findViewById(R.id.exo_duration);
-        timeBar = (DefaultTimeBar)findViewById(R.id.exo_progress);
-        btn_play = (ImageButton)findViewById(R.id.exo_play);
-        btn_pause = (ImageButton)findViewById(R.id.exo_pause);
 
         List<MediaMetadataCompat> musicList = new MusicSourceHelper(getContentResolver()).getAllMusicList();
 
@@ -83,54 +61,30 @@ public class MusicplayActivity extends AppCompatActivity {
         sessionConnector.setPlayer(player.getPlayer(), null);//여따가 prepare해보자
 
         try {
-            controller = new MediaControllerCompat(this, session.getSessionToken());
-            controller.registerCallback(new MediaControllerCallback());
+            mController = new MediaControllerCompat(this, session.getSessionToken());
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        MediaMetadataCompat music = musicList.get(0);
-        if(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)==null)
-            iv_albumcover.setImageResource(R.drawable.no_cover);
-        else {
-            iv_albumcover.setImageURI(Uri.parse(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)));
-        }
-        tv_title.setText(music.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
-        tv_title.setSelected(true);
-        tv_artist.setText(music.getString(MediaMetadataCompat.METADATA_KEY_ARTIST));
-        tv_artist.setSelected(true);
-        tv_albumtitle.setText(music.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
-        tv_artist.setSelected(true);
-        tv_duration.setText(TimeUtils.formatTimeTommss(music.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
-        tv_position.setText("00:00");
-        timeBar.setDuration(music.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
-        timeBar.setPosition(0L);
-        changePlaybackPosition();
-        timeBar.addListener(new TimeBar.OnScrubListener(){
+        //지금당장은 activity가 start, stop, destroy시 player도 함께 start, stop, destroy가 되어야하기 때문에 session, player 초기화를 여기에서 하지만
+        //나중에 Service 추가되면 session, player와 관련된초기화는 거기에서 모두 담당, controller와 service 초기화는 browserClient에서 담당하여 viewmodel에서 browserClient만 불러올거임
+        //그렇게 되면 CustomViewModelFactory가 있을 필요가 없어짐(초기화시 필요한 파라미터가 없어지기때문에)
+        viewModel = new CustomViewModelFactory(getApplication(), mController).create(MusicplayViewModel.class);
+        final ActivityMusicplayBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_musicplay);
+        binding.setViewModel(viewModel);
+        binding.setLifecycleOwner(this);
+
+        timeBar = (DefaultTimeBar)findViewById(R.id.exo_progress);
+        timeBar.addListener(new TimeBar.OnScrubListener() {
             @Override
             public void onScrubStart(TimeBar timeBar, long position) { }
             @Override
             public void onScrubMove(TimeBar timeBar, long position) { }
             @Override
             public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
-                if(controller!=null)
-                    controller.getTransportControls().seekTo(position);
+                if(mController!=null)
+                    mController.getTransportControls().seekTo(position);
             }
         });
-    }
-
-    private void changePlaybackPosition() {
-        uiHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                long curpos = controller.getPlaybackState().getPosition();
-                if(controller.getPlaybackState().getState()==PlaybackStateCompat.STATE_PLAYING || controller.getPlaybackState().getState()==PlaybackStateCompat.STATE_BUFFERING) {
-                    tv_position.setText(TimeUtils.formatTimeTommss(curpos));
-                    timeBar.setPosition(curpos);
-                }
-                if(updatePosition)
-                    changePlaybackPosition();
-            }
-        },100L);
     }
 
     private MediaSessionConnector createMediaSessionConnector() {
@@ -163,7 +117,6 @@ public class MusicplayActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        updatePosition = false;
         player.release();
         session.setActive(false);
         session.release();
@@ -190,73 +143,31 @@ public class MusicplayActivity extends AppCompatActivity {
     }
 
     public void onPlaybackControlBtnClick(View v) {
-        if(controller != null) {
+        if(mController != null) {
             switch (v.getId()) {
-                case R.id.exo_play:
-                    controller.getTransportControls().play();
-                    break;
-                case R.id.exo_pause:
-                    controller.getTransportControls().pause();
+                case R.id.exo_playpause:
+                    if(viewModel.getIsPlaying().getValue())
+                        mController.getTransportControls().pause();
+                    else
+                        mController.getTransportControls().play();
                     break;
                 case R.id.exo_next:
-                    controller.getTransportControls().skipToNext();
+                    mController.getTransportControls().skipToNext();
                     break;
                 case R.id.exo_prev:
-                    controller.getTransportControls().skipToPrevious();
+                    mController.getTransportControls().skipToPrevious();
                     break;
                 case R.id.exo_shuffle:
-                    if(controller.getShuffleMode()== PlaybackStateCompat.SHUFFLE_MODE_NONE)
-                        controller.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
+                    if(mController.getShuffleMode()== PlaybackStateCompat.SHUFFLE_MODE_NONE)
+                        mController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
                     else
-                        controller.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
+                        mController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
                     break;
                 case R.id.exo_repeat_toggle:
-                    if(controller.getRepeatMode()== PlaybackStateCompat.REPEAT_MODE_ALL)
-                        controller.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ONE);
+                    if(mController.getRepeatMode()== PlaybackStateCompat.REPEAT_MODE_ALL)
+                        mController.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ONE);
                     else
-                        controller.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL);
-            }
-        }
-    }
-
-    private class MediaControllerCallback extends MediaControllerCompat.Callback {
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            super.onPlaybackStateChanged(state);
-            if(state.getState()==PlaybackStateCompat.STATE_BUFFERING || state.getState()==PlaybackStateCompat.STATE_PLAYING) {
-                btn_pause.setVisibility(View.VISIBLE);
-                btn_play.setVisibility(View.GONE);
-            } else {
-                btn_play.setVisibility(View.VISIBLE);
-                btn_pause.setVisibility(View.GONE);
-            }
-        }
-
-        @Override
-        public void onMetadataChanged(MediaMetadataCompat metadata) {
-            super.onMetadataChanged(metadata);
-            if(metadata!=null) {
-                //TODO: 왜 Discription정보만 보존될까.
-                tv_title.setText(metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
-                tv_title.setSelected(true);
-                tv_artist.setText(metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE));
-                tv_artist.setSelected(true);
-                tv_albumtitle.setText(metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION));
-                tv_albumtitle.setSelected(true);
-                tv_position.setText("00:00");
-                tv_duration.setText(TimeUtils.formatTimeTommss(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
-                timeBar.setDuration(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
-                timeBar.setPosition(0L);
-                if(metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI)==null)
-                    iv_albumcover.setImageResource(R.drawable.no_cover);
-                else
-                    iv_albumcover.setImageURI(Uri.parse(metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI)));
-                // 플레이상태로 초기화
-                if((controller.getPlaybackState().getState() & PlaybackStateCompat.STATE_PAUSED)!=0) {
-                    controller.getTransportControls().play();
-                    btn_pause.setVisibility(View.VISIBLE);
-                    btn_play.setVisibility(View.GONE);
-                }
+                        mController.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL);
             }
         }
     }

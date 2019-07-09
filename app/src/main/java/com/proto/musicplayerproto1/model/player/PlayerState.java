@@ -1,4 +1,4 @@
-package com.proto.musicplayerproto1.player;
+package com.proto.musicplayerproto1.model.player;
 
 public class PlayerState {
     private int window;
