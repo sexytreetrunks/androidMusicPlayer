@@ -65,26 +65,11 @@ public class MusicplayActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        //지금당장은 activity가 start, stop, destroy시 player도 함께 start, stop, destroy가 되어야하기 때문에 session, player 초기화를 여기에서 하지만
-        //나중에 Service 추가되면 session, player와 관련된초기화는 거기에서 모두 담당, controller와 service 초기화는 browserClient에서 담당하여 viewmodel에서 browserClient만 불러올거임
-        //그렇게 되면 CustomViewModelFactory가 있을 필요가 없어짐(초기화시 필요한 파라미터가 없어지기때문에)
+
         viewModel = new CustomViewModelFactory(getApplication(), mController).create(MusicplayViewModel.class);
         final ActivityMusicplayBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_musicplay);
         binding.setViewModel(viewModel);
         binding.setLifecycleOwner(this);
-
-        timeBar = (DefaultTimeBar)findViewById(R.id.exo_progress);
-        timeBar.addListener(new TimeBar.OnScrubListener() {
-            @Override
-            public void onScrubStart(TimeBar timeBar, long position) { }
-            @Override
-            public void onScrubMove(TimeBar timeBar, long position) { }
-            @Override
-            public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
-                if(mController!=null)
-                    mController.getTransportControls().seekTo(position);
-            }
-        });
     }
 
     private MediaSessionConnector createMediaSessionConnector() {

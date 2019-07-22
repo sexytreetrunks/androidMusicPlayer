@@ -40,6 +40,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 app:duration="@{viewModel.nowMediaMetadata.duration}"
+                app:onScrub="@{viewModel.timebarScrubListener}"
                 app:progress="@{viewModel.position}"
                 app:unplayed_color="@color/gray"
                 app:played_color="@color/progress_color"

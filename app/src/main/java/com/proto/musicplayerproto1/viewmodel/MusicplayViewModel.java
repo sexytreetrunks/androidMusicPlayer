@@ -3,14 +3,17 @@ package com.proto.musicplayerproto1.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.ViewModel;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 import android.view.View;
 
+import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.R;
 import com.proto.musicplayerproto1.model.data.DisplayMetadata;
 import com.proto.musicplayerproto1.model.data.DisplayPlaybackState;
@@ -69,7 +72,7 @@ public class MusicplayViewModel extends AndroidViewModel {
         },100L);
     }
 
-    public void onPlaybackControlBtnClick(View v) {
+    public void onPlaybackControlBtnClick(View v) {//onClickListener
         if(mController != null) {
             switch (v.getId()) {
                 case R.id.exo_playpause:
@@ -94,6 +97,25 @@ public class MusicplayViewModel extends AndroidViewModel {
                     mController.getTransportControls().setRepeatMode((mController.getRepeatMode()+1)%3);
             }
         }
+    }
+
+    //Could not find accessor 에러: getter와 연결된 variable의 이름과 xml에서 불러오는 variable의 이름이 일치해야함. 또한 getter는 parameter가지면 안됨.
+    public TimeBar.OnScrubListener getTimebarScrubListener() {
+        return (new TimeBar.OnScrubListener() {
+            @Override
+            public void onScrubStart(TimeBar timeBar, long position) {
+            }
+
+            @Override
+            public void onScrubMove(TimeBar timeBar, long position) {
+            }
+
+            @Override
+            public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
+                if(mController!=null)
+                    mController.getTransportControls().seekTo(position);
+            }
+        });
     }
 
     private class MediaControllerCallback extends MediaControllerCompat.Callback {

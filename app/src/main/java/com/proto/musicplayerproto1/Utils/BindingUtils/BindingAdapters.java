@@ -7,6 +7,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.google.android.exoplayer2.ui.DefaultTimeBar;
+import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.R;
 
 public class BindingAdapters {
@@ -42,5 +43,10 @@ public class BindingAdapters {
             button.setImageResource(R.drawable.exo_controls_repeat_all);
         else if(repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE)
             button.setImageResource(R.drawable.exo_controls_repeat_one);
+    }
+
+    @BindingAdapter("app:onScrub")
+    public static void addOnScrubListener(DefaultTimeBar timeBar, TimeBar.OnScrubListener listener) {
+        timeBar.addListener(listener);
     }
 }

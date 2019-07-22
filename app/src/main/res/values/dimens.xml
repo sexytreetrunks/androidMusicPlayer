@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="coverWrapperSize">200dp</dimen>
+    <dimen name="coverSize">200dp</dimen>
+    <dimen name="titleSize">300dp</dimen>
+    <dimen name="subtitleSize">200dp</dimen>
+</resources>

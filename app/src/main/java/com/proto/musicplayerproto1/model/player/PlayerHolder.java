@@ -18,7 +18,9 @@ import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
 import java.util.ArrayList;
@@ -41,7 +43,6 @@ public class PlayerHolder {
         this.playerState = playerState;
         this.playSrc = playSrc;
 
-        AudioManager audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                                                     .setUsage(C.USAGE_MEDIA)
                                                     .setContentType(C.CONTENT_TYPE_MOVIE)
@@ -130,4 +131,5 @@ public class PlayerHolder {
             }
         });
     }
+
 }
