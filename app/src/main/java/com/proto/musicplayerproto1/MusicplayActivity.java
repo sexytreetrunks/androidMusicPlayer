@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.os.RemoteException;
+import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -38,8 +39,6 @@ public class MusicplayActivity extends AppCompatActivity {
     private MediaSessionCompat session;
     private MediaSessionConnector sessionConnector;
     private MediaControllerCompat mController;
-
-    private DefaultTimeBar timeBar;
 
     private static final String PERMITION_LOG_TAG = "**AppPermission";
     private final int MY_PERMISSION_REQUEST_STORAGE = 100;

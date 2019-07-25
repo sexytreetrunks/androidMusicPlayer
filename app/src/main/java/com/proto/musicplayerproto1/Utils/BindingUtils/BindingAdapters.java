@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.TimeBar;
@@ -33,8 +34,8 @@ public class BindingAdapters {
     }
 
     @BindingAdapter("app:progress")
-    public static void setProgress(DefaultTimeBar timeBar, long position) {
-        timeBar.setPosition(position);
+    public static void setProgress(DefaultTimeBar timeBar, long progress) {
+        timeBar.setPosition(progress);
     }
 
     @BindingAdapter("app:repeatModeIcon")
@@ -48,5 +49,14 @@ public class BindingAdapters {
     @BindingAdapter("app:onScrub")
     public static void addOnScrubListener(DefaultTimeBar timeBar, TimeBar.OnScrubListener listener) {
         timeBar.addListener(listener);
+    }
+
+    @BindingAdapter("android:text")
+    public static void setText(TextView textView, String text) {
+        String oldText = textView.getText().toString();
+        if(!oldText.equals(text)) {
+            textView.setText(text);
+            textView.setSelected(true);
+        }
     }
 }

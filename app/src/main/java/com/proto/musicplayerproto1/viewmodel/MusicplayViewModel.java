@@ -3,14 +3,12 @@ package com.proto.musicplayerproto1.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 import android.view.View;
 
 import com.google.android.exoplayer2.ui.TimeBar;
@@ -22,7 +20,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     private MediaControllerCompat mController;
     private MutableLiveData<DisplayMetadata> nowMediaMetadata;
     private MutableLiveData<DisplayPlaybackState> nowPlaybackState;
-    private MutableLiveData<Long> position;
+    private MutableLiveData<Long> progress;
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
@@ -35,8 +33,8 @@ public class MusicplayViewModel extends AndroidViewModel {
         nowMediaMetadata = new MutableLiveData<>();
         nowPlaybackState = new MutableLiveData<>();
         nowPlaybackState.postValue(DEFAULT_PLAYBACK_STATE);
-        position = new MutableLiveData<>();
-        position.postValue(0L);
+        progress = new MutableLiveData<>();
+        progress.postValue(0L);
         changePlaybackPosition();
     }
 
@@ -44,8 +42,8 @@ public class MusicplayViewModel extends AndroidViewModel {
         return nowMediaMetadata;
     }
 
-    public MutableLiveData<Long> getPosition() {
-        return position;
+    public MutableLiveData<Long> getProgress() {
+        return progress;
     }
 
     public MutableLiveData<DisplayPlaybackState> getNowPlaybackState() {
@@ -64,7 +62,7 @@ public class MusicplayViewModel extends AndroidViewModel {
             public void run() {
                 long curpos = mController.getPlaybackState().getPosition();
                 if(nowPlaybackState.getValue().isPlaying()) {
-                    position.postValue(curpos);
+                    progress.postValue(curpos);
                 }
                 if(updatePosition)
                     changePlaybackPosition();
@@ -162,7 +160,7 @@ public class MusicplayViewModel extends AndroidViewModel {
                         metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
                 );
                 nowMediaMetadata.postValue(nowPlayingData);
-                position.postValue(0L);
+                progress.postValue(0L);
                 mController.getTransportControls().play();
                 DisplayPlaybackState displaystate = nowPlaybackState.getValue();
                 displaystate.setPlaying(true);

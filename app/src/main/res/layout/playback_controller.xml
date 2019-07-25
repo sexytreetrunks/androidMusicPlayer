@@ -32,7 +32,7 @@
                 android:textSize="16dp"
                 android:layout_marginLeft="10dp"
                 android:padding="4dp"
-                android:text="@{TimeUtils.formatTimeTommss(viewModel.position)}" />
+                android:text="@{TimeUtils.formatTimeTommss(viewModel.progress)}" />
 
             <com.google.android.exoplayer2.ui.DefaultTimeBar
                 android:id="@+id/exo_progress"
@@ -41,7 +41,7 @@
                 android:layout_weight="1"
                 app:duration="@{viewModel.nowMediaMetadata.duration}"
                 app:onScrub="@{viewModel.timebarScrubListener}"
-                app:progress="@{viewModel.position}"
+                app:progress="@{viewModel.progress}"
                 app:unplayed_color="@color/gray"
                 app:played_color="@color/progress_color"
                 app:scrubber_color="@color/playcontroller_btn_color" />
