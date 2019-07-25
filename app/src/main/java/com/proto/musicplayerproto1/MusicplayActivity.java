@@ -103,7 +103,6 @@ public class MusicplayActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         player.release();
-        session.setActive(false);
         session.release();
     }
 

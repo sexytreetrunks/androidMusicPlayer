@@ -72,7 +72,8 @@ public class MusicplayViewModel extends AndroidViewModel {
         },100L);
     }
 
-    public void onPlaybackControlBtnClick(View v) {//onClickListener
+    //원래 정석대로라면 viewModel에서 view객체를 사용하면안됨. viewModel은 view객체가 사용할 데이터만 가져와야하는거. 이건 어떻게 리펙토링해야할지 고민필요
+    public void onPlaybackControlBtnClick(View v) {
         if(mController != null) {
             switch (v.getId()) {
                 case R.id.exo_playpause:
