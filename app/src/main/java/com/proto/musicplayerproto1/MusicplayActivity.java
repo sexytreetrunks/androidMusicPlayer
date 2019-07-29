@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.databinding.ActivityMusicplayBinding;
 import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
+import com.proto.musicplayerproto1.model.player.MusicPlaybackPreparer;
 import com.proto.musicplayerproto1.model.player.PlayerHolder;
 import com.proto.musicplayerproto1.model.player.PlayerState;
 import com.proto.musicplayerproto1.viewmodel.CustomViewModelFactory;
@@ -40,9 +41,6 @@ public class MusicplayActivity extends AppCompatActivity {
     private MediaSessionConnector sessionConnector;
     private MediaControllerCompat mController;
 
-    private static final String PERMITION_LOG_TAG = "**AppPermission";
-    private final int MY_PERMISSION_REQUEST_STORAGE = 100;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,12 +50,9 @@ public class MusicplayActivity extends AppCompatActivity {
             checkPermissions();
         }
 
-        List<MediaMetadataCompat> musicList = new MusicSourceHelper(getContentResolver()).getAllMusicList();
-
-        player = new PlayerHolder(this, new PlayerState(), musicList);
+        player = new PlayerHolder(this, new PlayerState());
         session = new MediaSessionCompat(this, getPackageName());
         sessionConnector = createMediaSessionConnector();
-        sessionConnector.setPlayer(player.getPlayer(), null);//여따가 prepare해보자
 
         try {
             mController = new MediaControllerCompat(this, session.getSessionToken());
@@ -69,6 +64,14 @@ public class MusicplayActivity extends AppCompatActivity {
         final ActivityMusicplayBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_musicplay);
         binding.setViewModel(viewModel);
         binding.setLifecycleOwner(this);
+
+
+        mController.getTransportControls().prepare();
+        /*MediaBrowserCompat mediaBrowser;
+        MediaBrowserCompat.ConnectionCallback callback;//browser에 등록
+        callback.onConnected();
+        MediaBrowserCompat.SubscriptionCallback subscriptionCallback;//browser에 등록
+        subscriptionCallback.onChildrenLoaded();*/
     }
 
     private MediaSessionConnector createMediaSessionConnector() {
@@ -80,6 +83,8 @@ public class MusicplayActivity extends AppCompatActivity {
                 return (MediaDescriptionCompat)obj;
             }
         });
+        MusicPlaybackPreparer playbackPreparer = new MusicPlaybackPreparer(player.getPlayer(), this);
+        connector.setPlayer(player.getPlayer(), playbackPreparer);
         return connector;
     }
 
@@ -87,7 +92,6 @@ public class MusicplayActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         player.start();
-        sessionConnector.setPlayer(player.getPlayer(),null);
         session.setActive(true);
     }
 
@@ -106,6 +110,8 @@ public class MusicplayActivity extends AppCompatActivity {
     }
 
     private void checkPermissions() {
+        String PERMITION_LOG_TAG = "**AppPermission";
+        int MY_PERMISSION_REQUEST_STORAGE = 100;
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)

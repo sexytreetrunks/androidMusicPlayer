@@ -16,6 +16,8 @@ import com.proto.musicplayerproto1.R;
 import com.proto.musicplayerproto1.model.data.DisplayMetadata;
 import com.proto.musicplayerproto1.model.data.DisplayPlaybackState;
 
+import java.util.List;
+
 public class MusicplayViewModel extends AndroidViewModel {
     private MediaControllerCompat mController;
     private MutableLiveData<DisplayMetadata> nowMediaMetadata;
@@ -24,6 +26,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
+    //초기값지정시 player와 ViewModel의 nowPlayerbackState 값을 따로 지정해야함. player에 있는 초기 상태를 가져와서 여기서 초기화를 시키거나, 여기서 초기화시킨걸 player 초기값으로 지정하는 식으로 바꿔야함
     private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
 
     public MusicplayViewModel(@NonNull Application application, MediaControllerCompat mController) {

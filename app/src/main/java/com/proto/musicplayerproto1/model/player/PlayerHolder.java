@@ -23,6 +23,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,18 +31,14 @@ import java.util.List;
  * 비디오 플레이어 컨트롤 담당(플레이어와 UI간 통신 담당)
  */
 public class PlayerHolder {
-    private Context context;
     private PlayerState playerState;
     private SimpleExoPlayer player;
-    private List<MediaMetadataCompat> playSrc;// MediaMetadataCompat or Arraylist<MediaMetadataCompat>
 
     private static final String UI_LOG_TAG = "**PlayerHolder Func call";
     private static final String PLAYER_LOG_TAG = "**Player status";
 
-    public PlayerHolder(Context context, PlayerState playerState, List<MediaMetadataCompat> playSrc) {
-        this.context = context;
+    public PlayerHolder(Context context, PlayerState playerState) {
         this.playerState = playerState;
-        this.playSrc = playSrc;
 
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                                                     .setUsage(C.USAGE_MEDIA)
@@ -52,41 +49,22 @@ public class PlayerHolder {
         player.setRepeatMode(Player.REPEAT_MODE_ALL);
     }
 
-    public Player getPlayer() {
+    public ExoPlayer getPlayer() {
         return player;
     }
 
     public void start() {
-        MediaSource mediaSource = buildMediaSource(playSrc);
-        player.prepare(mediaSource);
         player.setPlayWhenReady(playerState.getWhenReady());
-
         player.seekTo(playerState.getWindow(), playerState.getPosition());
         attachLogging(player);
         Log.i(UI_LOG_TAG,"start func call");
-    }
-
-    private MediaSource buildMediaSource(List<MediaMetadataCompat> playSrcList) {
-        List<MediaSource> uriList = new ArrayList<MediaSource>();
-        for(MediaMetadataCompat m: playSrcList) {
-            uriList.add(createExtractorMediaSource(Uri.parse(m.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)), m.getDescription()));
-        }
-        ConcatenatingMediaSource concatenatingMediaSource = new ConcatenatingMediaSource();
-        concatenatingMediaSource.addMediaSources(uriList);
-        return (new LoopingMediaSource(concatenatingMediaSource));
-    }
-
-    private MediaSource createExtractorMediaSource(Uri mediaUri, MediaDescriptionCompat description) {
-        return new ExtractorMediaSource.Factory(new DefaultDataSourceFactory(context, "exoplayer-learning"))
-                .setTag(description)
-                .createMediaSource(mediaUri);
     }
 
     public void stop() {
         playerState.setPosition(player.getCurrentPosition());
         playerState.setWindow(player.getCurrentWindowIndex());
         playerState.setWhenReady(player.getPlayWhenReady());
-        player.stop(true);
+        player.stop(true); // reset 시키든 안시키든 상관없음.
         Log.i(UI_LOG_TAG, "stop func call");
     }
 
@@ -98,6 +76,12 @@ public class PlayerHolder {
     private void attachLogging(ExoPlayer exoPlayer) {
 
         exoPlayer.addListener(new Player.EventListener() {
+
+            @Override
+            public void onPositionDiscontinuity(int reason) {
+                Log.d(PLAYER_LOG_TAG,"window position changed : " +reason);
+            }
+
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 Log.d(PLAYER_LOG_TAG, getStateString(playbackState)+","+((playWhenReady)? "playReady":"playNotReady"));
