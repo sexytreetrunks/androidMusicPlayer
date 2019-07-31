@@ -35,7 +35,7 @@ public class PlayerHolder {
     private SimpleExoPlayer player;
 
     private static final String UI_LOG_TAG = "**PlayerHolder Func call";
-    private static final String PLAYER_LOG_TAG = "**Player status";
+    private static final String PLAYER_LOG_TAG = "++Player status";
 
     public PlayerHolder(Context context, PlayerState playerState) {
         this.playerState = playerState;

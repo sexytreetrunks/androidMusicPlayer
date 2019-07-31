@@ -1,6 +1,7 @@
 package com.proto.musicplayerproto1;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
@@ -40,6 +41,7 @@ public class MusicplayActivity extends AppCompatActivity {
     private MediaSessionCompat session;
     private MediaSessionConnector sessionConnector;
     private MediaControllerCompat mController;
+    private MediaBrowserCompat mBrowser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +52,7 @@ public class MusicplayActivity extends AppCompatActivity {
             checkPermissions();
         }
 
-        player = new PlayerHolder(this, new PlayerState());
+        /*player = new PlayerHolder(this, new PlayerState());
         session = new MediaSessionCompat(this, getPackageName());
         sessionConnector = createMediaSessionConnector();
 
@@ -59,22 +61,24 @@ public class MusicplayActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
-        viewModel = new CustomViewModelFactory(getApplication(), mController).create(MusicplayViewModel.class);
-        final ActivityMusicplayBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_musicplay);
-        binding.setViewModel(viewModel);
-        binding.setLifecycleOwner(this);
-
-
-        mController.getTransportControls().prepare();
+        */
         /*MediaBrowserCompat mediaBrowser;
-        MediaBrowserCompat.ConnectionCallback callback;//browser에 등록
-        callback.onConnected();
-        MediaBrowserCompat.SubscriptionCallback subscriptionCallback;//browser에 등록
-        subscriptionCallback.onChildrenLoaded();*/
+        MediaBrowserCompat.ConnectionCallback callback;
+        callback.onConnected();//여기서 mController 초기화
+        MediaBrowserCompat.SubscriptionCallback subscriptionCallback;
+        subscriptionCallback.onChildrenLoaded();//여기서 MusicService.onLoadedChildren에서 던진 데이터 받아서 viewModel에 있는 데이타 갱신*/
+
+        // 이제 서비스 불러와서 시작하면됨
+        //mBrowser = new MediaBrowserCompat(this, new ComponentName(this, MusicService.class), new MediaBrowserConnectionCallback(),null);
+
+        viewModel = new CustomViewModelFactory(getApplication()).create(MusicplayViewModel.class);
+        final ActivityMusicplayBinding binding = DataBindingUtil.setContentView(MusicplayActivity.this, R.layout.activity_musicplay);
+        binding.setViewModel(viewModel);
+        binding.setLifecycleOwner(MusicplayActivity.this);
+
     }
 
-    private MediaSessionConnector createMediaSessionConnector() {
+    /*private MediaSessionConnector createMediaSessionConnector() {
         MediaSessionConnector connector = new MediaSessionConnector(session);
         connector.setQueueNavigator((MediaSessionConnector.QueueNavigator) new TimelineQueueNavigator(session) {
             @Override
@@ -86,11 +90,12 @@ public class MusicplayActivity extends AppCompatActivity {
         MusicPlaybackPreparer playbackPreparer = new MusicPlaybackPreparer(player.getPlayer(), this);
         connector.setPlayer(player.getPlayer(), playbackPreparer);
         return connector;
-    }
+    }*/
 
-    @Override
+    /*@Override
     protected void onStart() {
         super.onStart();
+        mController.getTransportControls().prepare();
         player.start();
         session.setActive(true);
     }
@@ -107,7 +112,9 @@ public class MusicplayActivity extends AppCompatActivity {
         super.onDestroy();
         player.release();
         session.release();
-    }
+    }*/
+
+
 
     private void checkPermissions() {
         String PERMITION_LOG_TAG = "**AppPermission";

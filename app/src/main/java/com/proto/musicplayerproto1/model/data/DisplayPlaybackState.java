@@ -5,6 +5,9 @@ public class DisplayPlaybackState {
     private boolean isShuffle;
     private int repeatMode;
 
+    public DisplayPlaybackState() {
+    }
+
     public DisplayPlaybackState(boolean isPlaying, boolean isShuffle, int repeatMode) {
         this.isPlaying = isPlaying;
         this.isShuffle = isShuffle;

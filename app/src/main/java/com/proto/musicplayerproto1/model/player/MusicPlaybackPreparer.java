@@ -43,6 +43,8 @@ public class MusicPlaybackPreparer implements MediaSessionConnector.PlaybackPrep
         ArrayList<MediaMetadataCompat> list = new MusicSourceHelper(context.getContentResolver()).getAllMusicList();
         MediaSource mediaSource = buildMediaSource(list);
         exoPlayer.prepare(mediaSource);
+        exoPlayer.setPlayWhenReady(true);
+        exoPlayer.seekTo(0,0L);
         Log.d("++","onPrepare");
     }
 
