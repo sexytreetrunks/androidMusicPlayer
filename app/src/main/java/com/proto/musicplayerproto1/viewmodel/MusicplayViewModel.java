@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.View;
 
 import com.google.android.exoplayer2.ui.TimeBar;
-import com.proto.musicplayerproto1.MusicClient;
 import com.proto.musicplayerproto1.MusicService;
 import com.proto.musicplayerproto1.R;
 import com.proto.musicplayerproto1.model.data.DisplayMetadata;
@@ -43,9 +42,9 @@ public class MusicplayViewModel extends AndroidViewModel {
         Log.d("**","viewmodel 생성");
         nowMediaMetadata = new MutableLiveData<>();
         nowPlaybackState = new MutableLiveData<>();
-        nowPlaybackState.postValue(DEFAULT_PLAYBACK_STATE);
+        nowPlaybackState.setValue(DEFAULT_PLAYBACK_STATE);
         progress = new MutableLiveData<>();
-        progress.postValue(0L);
+        progress.setValue(0L);
         changePlaybackPosition();
         Log.d("**",(mMediaBrowser==null)? "browser is null":"browser 생성됨");
         if(mMediaBrowser==null) {
@@ -57,7 +56,7 @@ public class MusicplayViewModel extends AndroidViewModel {
         } else {
             if(mController!=null) {
                 MediaMetadataCompat metadata = mController.getMetadata();
-                nowMediaMetadata.postValue(new DisplayMetadata(
+                nowMediaMetadata.setValue(new DisplayMetadata(
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI),
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE),
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE),
@@ -73,7 +72,7 @@ public class MusicplayViewModel extends AndroidViewModel {
                 boolean shufflemode = !(mController.getShuffleMode()==PlaybackStateCompat.SHUFFLE_MODE_NONE);
                 displayPlaybackState.setShuffle(shufflemode);
                 displayPlaybackState.setRepeatMode(mController.getRepeatMode());
-                nowPlaybackState.postValue(displayPlaybackState);
+                nowPlaybackState.setValue(displayPlaybackState);
             }
         }
     }
@@ -94,6 +93,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         updatePosition = false;
+        Log.d("**","viewmodel onCleared");
     }
 
     private void changePlaybackPosition() {
@@ -205,7 +205,7 @@ public class MusicplayViewModel extends AndroidViewModel {
                 displaystate.setPlaying(true);
             else
                 displaystate.setPlaying(false);
-            nowPlaybackState.postValue(displaystate);
+            nowPlaybackState.setValue(displaystate);
         }
 
         @Override
@@ -213,7 +213,7 @@ public class MusicplayViewModel extends AndroidViewModel {
             super.onRepeatModeChanged(repeatMode);
             DisplayPlaybackState displaystate = nowPlaybackState.getValue();
             displaystate.setRepeatMode(repeatMode);
-            nowPlaybackState.postValue(displaystate);
+            nowPlaybackState.setValue(displaystate);
         }
 
         @Override
@@ -224,7 +224,7 @@ public class MusicplayViewModel extends AndroidViewModel {
                 displaystate.setShuffle(false);
             else
                 displaystate.setShuffle(true);
-            nowPlaybackState.postValue(displaystate);
+            nowPlaybackState.setValue(displaystate);
         }
 
         @Override
@@ -239,11 +239,11 @@ public class MusicplayViewModel extends AndroidViewModel {
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION),
                         metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
                 );
-                nowMediaMetadata.postValue(nowPlayingData);
-                progress.postValue(0L);
+                nowMediaMetadata.setValue(nowPlayingData);
+                progress.setValue(0L);
                 DisplayPlaybackState displaystate = nowPlaybackState.getValue();
                 displaystate.setPlaying(true);
-                nowPlaybackState.postValue(displaystate);
+                nowPlaybackState.setValue(displaystate);
                 mController.getTransportControls().play();
             }
         }
