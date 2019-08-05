@@ -33,6 +33,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
+
     //초기값지정시 player와 ViewModel의 nowPlayerbackState 값을 따로 지정해야함. player에 있는 초기 상태를 가져와서 여기서 초기화를 시키거나, 여기서 초기화시킨걸 player 초기값으로 지정하는 식으로 바꿔야함
     private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
 
@@ -46,35 +47,15 @@ public class MusicplayViewModel extends AndroidViewModel {
         progress = new MutableLiveData<>();
         progress.setValue(0L);
         changePlaybackPosition();
-        Log.d("**",(mMediaBrowser==null)? "browser is null":"browser 생성됨");
         if(mMediaBrowser==null) {
             mMediaBrowser = new MediaBrowserCompat(application.getApplicationContext(),
                     new ComponentName(application.getApplicationContext(), MusicService.class),
                     new MediaBrowserConnectionCallback(application.getApplicationContext()),
                     null);
-            mMediaBrowser.connect(); //요걸해야 service create되는거
-        } else {
-            if(mController!=null) {
-                MediaMetadataCompat metadata = mController.getMetadata();
-                nowMediaMetadata.setValue(new DisplayMetadata(
-                        metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI),
-                        metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE),
-                        metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE),
-                        metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION),
-                        metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
-                ));
-                PlaybackStateCompat playbackState = mController.getPlaybackState();
-                DisplayPlaybackState displayPlaybackState = new DisplayPlaybackState();
-                if(playbackState.getState()==PlaybackStateCompat.STATE_PLAYING || playbackState.getState()==PlaybackStateCompat.STATE_BUFFERING)
-                    displayPlaybackState.setPlaying(true);
-                else
-                    displayPlaybackState.setPlaying(false);
-                boolean shufflemode = !(mController.getShuffleMode()==PlaybackStateCompat.SHUFFLE_MODE_NONE);
-                displayPlaybackState.setShuffle(shufflemode);
-                displayPlaybackState.setRepeatMode(mController.getRepeatMode());
-                nowPlaybackState.setValue(displayPlaybackState);
-            }
+            Log.d("**","browser 생성");
         }
+        mMediaBrowser.connect();
+        Log.d("**","browser connection 요청");
     }
 
     public MutableLiveData<DisplayMetadata> getNowMediaMetadata() {
@@ -93,7 +74,9 @@ public class MusicplayViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         updatePosition = false;
-        Log.d("**","viewmodel onCleared");
+        /*mMediaBrowser.unsubscribe("root",subscriptionCallback);*/
+        mMediaBrowser.disconnect();
+        Log.d("**","viewmodel onCleared(browser connection 종료)");
     }
 
     private void changePlaybackPosition() {
@@ -163,7 +146,7 @@ public class MusicplayViewModel extends AndroidViewModel {
         private Context context;
         public MediaBrowserConnectionCallback(Context context) {
             this.context = context;
-            Log.d("**", "browser connection 생성");
+            Log.d("**", "browser callback 생성(connection callback)");
         }
 
         @Override
@@ -175,19 +158,16 @@ public class MusicplayViewModel extends AndroidViewModel {
             } catch (RemoteException re) {
                 re.printStackTrace();
             }
-            super.onConnected();
         }
 
         @Override
         public void onConnectionSuspended() {
             Log.d("**","browser connection suspended");
-            super.onConnectionSuspended();
         }
 
         @Override
         public void onConnectionFailed() {
             Log.d("**", "browser connection failed");
-            super.onConnectionFailed();
         }
     }
 
@@ -198,8 +178,6 @@ public class MusicplayViewModel extends AndroidViewModel {
 
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            Log.d("**","controller callback, onPlaybackStateChanged");
-            super.onPlaybackStateChanged(state);
             DisplayPlaybackState displaystate = nowPlaybackState.getValue();
             if(state.getState()==PlaybackStateCompat.STATE_PLAYING || state.getState()==PlaybackStateCompat.STATE_BUFFERING)
                 displaystate.setPlaying(true);
@@ -210,7 +188,6 @@ public class MusicplayViewModel extends AndroidViewModel {
 
         @Override
         public void onRepeatModeChanged(int repeatMode) {
-            super.onRepeatModeChanged(repeatMode);
             DisplayPlaybackState displaystate = nowPlaybackState.getValue();
             displaystate.setRepeatMode(repeatMode);
             nowPlaybackState.setValue(displaystate);
@@ -218,7 +195,6 @@ public class MusicplayViewModel extends AndroidViewModel {
 
         @Override
         public void onShuffleModeChanged(int shuffleMode) {
-            super.onShuffleModeChanged(shuffleMode);
             DisplayPlaybackState displaystate = nowPlaybackState.getValue();
             if(shuffleMode==PlaybackStateCompat.SHUFFLE_MODE_NONE)
                 displaystate.setShuffle(false);
@@ -229,10 +205,9 @@ public class MusicplayViewModel extends AndroidViewModel {
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            Log.d("**","controller callback, onMetadataChanged");
-            super.onMetadataChanged(metadata);
             if(metadata!=null) {
                 DisplayMetadata nowPlayingData = new DisplayMetadata(
+                        metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID),
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI),
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE),
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE),
@@ -248,6 +223,4 @@ public class MusicplayViewModel extends AndroidViewModel {
             }
         }
     }
-
-
 }

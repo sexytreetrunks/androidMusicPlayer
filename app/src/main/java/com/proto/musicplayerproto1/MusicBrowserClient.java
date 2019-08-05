@@ -1,4 +1,4 @@
-package com.proto.musicplayerproto1.viewmodel;
+package com.proto.musicplayerproto1;
 
 import android.content.ComponentName;
 import android.content.Context;

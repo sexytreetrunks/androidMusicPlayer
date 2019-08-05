@@ -37,4 +37,13 @@ public class DisplayPlaybackState {
     public void setRepeatMode(int repeatMode) {
         this.repeatMode = repeatMode;
     }
+
+    @Override
+    public String toString() {
+        return "DisplayPlaybackState{" +
+                "isPlaying=" + isPlaying +
+                ", isShuffle=" + isShuffle +
+                ", repeatMode=" + repeatMode +
+                '}';
+    }
 }

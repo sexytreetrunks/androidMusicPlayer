@@ -3,6 +3,7 @@ package com.proto.musicplayerproto1.Utils.BindingUtils;
 import android.databinding.BindingAdapter;
 import android.net.Uri;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,6 +45,8 @@ public class BindingAdapters {
             button.setImageResource(R.drawable.exo_controls_repeat_all);
         else if(repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE)
             button.setImageResource(R.drawable.exo_controls_repeat_one);
+        else
+            Log.d("**","repeat mode not setted: "+repeatMode);
     }
 
     @BindingAdapter("app:onScrub")

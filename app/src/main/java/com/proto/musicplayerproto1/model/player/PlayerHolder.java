@@ -47,23 +47,20 @@ public class PlayerHolder {
         player = ExoPlayerFactory.newSimpleInstance(context, new DefaultTrackSelector());
         player.setAudioAttributes(audioAttributes, true);
         player.setRepeatMode(Player.REPEAT_MODE_ALL);
+        attachLogging(player);
     }
 
-    public ExoPlayer getPlayer() {
+    public SimpleExoPlayer getPlayer() {
         return player;
     }
 
     public void start() {
         player.setPlayWhenReady(playerState.getWhenReady());
         player.seekTo(playerState.getWindow(), playerState.getPosition());
-        attachLogging(player);
         Log.i(UI_LOG_TAG,"start func call");
     }
 
     public void stop() {
-        playerState.setPosition(player.getCurrentPosition());
-        playerState.setWindow(player.getCurrentWindowIndex());
-        playerState.setWhenReady(player.getPlayWhenReady());
         player.stop(true); // reset 시키든 안시키든 상관없음.
         Log.i(UI_LOG_TAG, "stop func call");
     }

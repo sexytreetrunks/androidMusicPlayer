@@ -45,7 +45,7 @@ public class MusicService extends MediaBrowserServiceCompat {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("**","service 생성");
+        Log.d("**","service 생성, "+Thread.currentThread().getName());
         player = new PlayerHolder(this, new PlayerState());
         session = new MediaSessionCompat(this, getPackageName());
         session.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
@@ -59,6 +59,7 @@ public class MusicService extends MediaBrowserServiceCompat {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+        mController.getTransportControls().prepare();
         //session.setSessionActivity();
     }
 
@@ -80,22 +81,37 @@ public class MusicService extends MediaBrowserServiceCompat {
     @Override
     public BrowserRoot onGetRoot(@NonNull String s, int i, @Nullable Bundle bundle) {
         // 존나 뭐하는 놈인지 모르겠음. null반환하면 연결 거부된다길래 일단 아무거나 만들어서 리턴함
+        Log.d("**","onGetRoot called");
         return (new BrowserRoot("root",null));
     }
 
     @Override
     public void onLoadChildren(@NonNull String s, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
+        Log.d("**","onLoadChildren called");
         //SEND DATA(playlist) to browser
         //RECIEVE DATA(playlist) from browser.onChildrenLoad
+        //playlist가져오기. player에서 playlist못갖고 옴.
+        //데이터 로직 다시 정리할필요가있음.
+        //DataList 세팅하는 시작점, DataList따로 저장하는 캐시클래스 필요
+        // player에서 데이터세팅이 시작되면 안됨.
+        // Viewmodel시작 시 -> 데이터캐싱 -> viewmodel 데이터초기화 -> view에 데이터 바인딩
+        //                              -> browser 초기화 -> browser connect -> controller 초기화 & 캐싱된 데이터 prepare
+        //result.sendResult();
     }
 
     //이것때문인지 아닌지 확인필요
     @Override
     public IBinder onBind(Intent intent) {
         Log.d("**","service binded. intent action is "+intent.getAction()); //-- manifest에 설정한 service의 action과 동일한지 확인 ㄱ
-        mController.getTransportControls().prepare();
-        mController.getTransportControls().play();
+        //mController.getTransportControls().play();
+        player.start();
         return super.onBind(intent);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("**","service onStartCommand");
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -148,6 +164,7 @@ public class MusicService extends MediaBrowserServiceCompat {
                     notificationManager.notify(NotificationBuilder.NOTIFICATION_ID, notification1);
                     break;
                 case PlaybackStateCompat.STATE_STOPPED:
+                case PlaybackStateCompat.STATE_NONE:
                     stopForeground(true);// foreground사용중지하고 notification도 지움. 근데 어짜피 stopSelf로 서비스 죽일거라서 이 명령어는 주석처리해도됨
                     stopSelf();
                     break;
