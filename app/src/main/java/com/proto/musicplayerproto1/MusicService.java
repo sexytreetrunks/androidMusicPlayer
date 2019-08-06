@@ -97,6 +97,7 @@ public class MusicService extends MediaBrowserServiceCompat {
         // Viewmodel시작 시 -> 데이터캐싱 -> viewmodel 데이터초기화 -> view에 데이터 바인딩
         //                              -> browser 초기화 -> browser connect -> controller 초기화 & 캐싱된 데이터 prepare
         //result.sendResult();
+
     }
 
     //이것때문인지 아닌지 확인필요
@@ -129,6 +130,7 @@ public class MusicService extends MediaBrowserServiceCompat {
 
     @Override
     public void onDestroy() {
+        player.stop();
         player.release();
         session.release();
         Log.d("**","service is destroyed");

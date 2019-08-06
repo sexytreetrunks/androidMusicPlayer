@@ -1,6 +1,7 @@
 package com.proto.musicplayerproto1.model.player;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -22,6 +23,7 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.proto.musicplayerproto1.R;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.List;
  * 비디오 플레이어 컨트롤 담당(플레이어와 UI간 통신 담당)
  */
 public class PlayerHolder {
+    private Context context;
     private PlayerState playerState;
     private SimpleExoPlayer player;
 
@@ -39,7 +42,7 @@ public class PlayerHolder {
 
     public PlayerHolder(Context context, PlayerState playerState) {
         this.playerState = playerState;
-
+        this.context = context;
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                                                     .setUsage(C.USAGE_MEDIA)
                                                     .setContentType(C.CONTENT_TYPE_MOVIE)
@@ -56,7 +59,7 @@ public class PlayerHolder {
 
     public void start() {
         player.setPlayWhenReady(playerState.getWhenReady());
-        player.seekTo(playerState.getWindow(), playerState.getPosition());
+        //player.seekTo(playerState.getWindow(), playerState.getPosition());
         Log.i(UI_LOG_TAG,"start func call");
     }
 
@@ -76,7 +79,11 @@ public class PlayerHolder {
 
             @Override
             public void onPositionDiscontinuity(int reason) {
-                Log.d(PLAYER_LOG_TAG,"window position changed : " +reason);
+                Log.d(PLAYER_LOG_TAG,"window position changed : "+ player.getCurrentWindowIndex() +", reason by: "+reason);
+                // 사용자가 임의로 window 변경한 경우 -> Player.DISCONTINUITY_REASON_SEEK, Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT 가 차례로 출력
+                // 예를들어 사용자가 seekbar로 position을 움직였을때 -> Player.DISCONTINUITY_REASON_SEEK
+                // 사용자가 다음곡, 이전곡으로 곡을 변경할때 -> Player.DISCONTINUITY_REASON_SEEK, Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
+                // 해당 곡의 duration이 끝나 곡이 변경된경우 -> Player.DISCONTINUITY_REASON_PERIOD_TRANSITION
             }
 
             @Override

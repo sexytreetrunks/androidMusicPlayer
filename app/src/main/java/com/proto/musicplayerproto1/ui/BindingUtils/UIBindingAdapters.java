@@ -1,4 +1,4 @@
-package com.proto.musicplayerproto1.Utils.BindingUtils;
+package com.proto.musicplayerproto1.ui.BindingUtils;
 
 import android.databinding.BindingAdapter;
 import android.net.Uri;
@@ -12,10 +12,10 @@ import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.R;
 
-public class BindingAdapters {
+public class UIBindingAdapters {
     @BindingAdapter("app:albumArt")
     public static void setAlbumArt(ImageView view, String albumArtUri) {
-        if(albumArtUri==null)
+        if(albumArtUri==null || albumArtUri.equals(""))
             view.setImageResource(R.drawable.no_cover);
         else
             view.setImageURI(Uri.parse(albumArtUri));

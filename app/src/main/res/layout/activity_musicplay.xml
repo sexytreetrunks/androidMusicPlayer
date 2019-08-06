@@ -10,41 +10,51 @@
             type="com.proto.musicplayerproto1.viewmodel.MusicplayViewModel" />
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context=".MusicplayActivity">
 
-        <ImageView
-            android:id="@+id/album_cover"
-            android:layout_width="@dimen/coverWrapperSize"
+        <com.proto.musicplayerproto1.ui.coverflow.PagerContainer
+            android:id="@+id/pager_container"
+            android:layout_width="match_parent"
             android:layout_height="@dimen/coverWrapperSize"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="100dp"
-            android:layout_marginEnd="8dp"
-            app:albumArt="@{viewModel.nowMediaMetadata.albumArtUri}"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_marginTop="68dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout_editor_absoluteX="0dp">
+
+            <com.proto.musicplayerproto1.ui.carousel.CarouselViewPager
+                android:id="@+id/overlap_pager"
+                android:layout_width="@dimen/coverSize"
+                android:layout_height="@dimen/coverSize"
+                android:layout_gravity="center"
+                app:currentDataPosition="@={viewModel.currentDataPosition}"
+                app:offscreenPageLimit="@{viewModel.uriListSize}" />
+            <!-- viewpager의 offscreenPageLimit은 나중에 list크기가 커지면 성능 저하를 불러오므로 UI마무리작업할때 10이하의 값으로 넣어주기 -->
+
+        </com.proto.musicplayerproto1.ui.coverflow.PagerContainer>
 
         <TextView
             android:id="@+id/title"
             android:layout_width="@dimen/titleSize"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="76dp"
             android:layout_marginEnd="8dp"
-            android:text="@{viewModel.nowMediaMetadata.title}"
-            android:textAlignment="center"
-            android:textSize="40dp"
+            android:layout_gravity="center_horizontal"
             android:ellipsize="marquee"
             android:focusable="true"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
+            android:text="@{viewModel.nowMediaMetadata.title}"
+            android:textAlignment="center"
+            android:textSize="40dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.494"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/album_cover" />
+            app:layout_constraintTop_toBottomOf="@+id/pager_container" />
 
         <TextView
             android:id="@+id/artist"
@@ -52,6 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_gravity="center_horizontal"
             android:text="@{viewModel.nowMediaMetadata.artist}"
             android:textAlignment="center"
             android:textSize="25dp"
@@ -69,6 +80,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_gravity="center_horizontal"
             android:text="@{viewModel.nowMediaMetadata.album}"
             android:textAlignment="center"
             android:textSize="25dp"
@@ -94,5 +106,5 @@
             bind:viewModel="@{viewModel}"
             tools:layout_editor_absoluteX="0dp" />
 
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 </layout>

@@ -1,11 +1,14 @@
 package com.proto.musicplayerproto1;
 
 import android.Manifest;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -16,11 +19,15 @@ import android.widget.Toast;
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
 import com.proto.musicplayerproto1.databinding.ActivityMusicplayBinding;
 import com.proto.musicplayerproto1.model.player.PlayerHolder;
+import com.proto.musicplayerproto1.ui.carousel.CarouselPagerAdapter;
+import com.proto.musicplayerproto1.ui.coverflow.CoverTransformer;
 import com.proto.musicplayerproto1.viewmodel.MusicplayViewModel;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MusicplayActivity extends AppCompatActivity {
+    private CarouselPagerAdapter adapter;
     private MusicplayViewModel viewModel;
 
     @Override
@@ -44,6 +51,25 @@ public class MusicplayActivity extends AppCompatActivity {
         ActivityMusicplayBinding binding = DataBindingUtil.setContentView(MusicplayActivity.this, R.layout.activity_musicplay);
         binding.setViewModel(viewModel);
         binding.setLifecycleOwner(MusicplayActivity.this);
+
+        adapter = new CarouselPagerAdapter(viewModel.getDataList().getValue()
+                                            .stream()
+                                            .map(m->m.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI))
+                                            .collect(Collectors.toList()));
+        binding.overlapPager.setAdapter(adapter);
+        binding.overlapPager.setPageTransformer(false, new CoverTransformer(0.3f, -70, 0f, 0.5f));
+
+        viewModel.getCurrentDataPosition().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer integer) {
+                //coverflow -> player
+                Log.d("==","dataposition onchanged");
+                MediaControllerCompat controller = viewModel.getController();
+                if(controller!=null){
+                    controller.getTransportControls().skipToQueueItem(integer);
+                }
+            }
+        });
     }
 
     @Override

@@ -3,12 +3,15 @@ package com.proto.musicplayerproto1.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -18,21 +21,29 @@ import android.view.View;
 
 import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.MusicService;
+import com.proto.musicplayerproto1.MusicplayActivity;
 import com.proto.musicplayerproto1.R;
 import com.proto.musicplayerproto1.model.data.DisplayMetadata;
 import com.proto.musicplayerproto1.model.data.DisplayPlaybackState;
+import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MusicplayViewModel extends AndroidViewModel {
+    //service 관련
     private static MediaControllerCompat mController;
     private static MediaBrowserCompat mMediaBrowser;
-    private MutableLiveData<DisplayMetadata> nowMediaMetadata;
-    private MutableLiveData<DisplayPlaybackState> nowPlaybackState;
-    private MutableLiveData<Long> progress;
+    //ui관련
+    private MutableLiveData<DisplayMetadata> nowMediaMetadata = new MutableLiveData<>();
+    private MutableLiveData<DisplayPlaybackState> nowPlaybackState = new MutableLiveData<>();
+    private MutableLiveData<Long> progress = new MutableLiveData<>();
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
-
+    //coverflow 관련
+    private MutableLiveData<Integer> currentDataPosition = new MutableLiveData<>();
+    private MutableLiveData<List<MediaMetadataCompat>> dataList = new MutableLiveData<>();
 
     //초기값지정시 player와 ViewModel의 nowPlayerbackState 값을 따로 지정해야함. player에 있는 초기 상태를 가져와서 여기서 초기화를 시키거나, 여기서 초기화시킨걸 player 초기값으로 지정하는 식으로 바꿔야함
     private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
@@ -41,10 +52,9 @@ public class MusicplayViewModel extends AndroidViewModel {
         super(application);
         //일단 여기서 브라우저 생성 & 컨트롤러 생성
         Log.d("**","viewmodel 생성");
-        nowMediaMetadata = new MutableLiveData<>();
-        nowPlaybackState = new MutableLiveData<>();
+        currentDataPosition.setValue(0);
+        dataList.setValue(new MusicSourceHelper(application.getContentResolver()).getAllMusicList());
         nowPlaybackState.setValue(DEFAULT_PLAYBACK_STATE);
-        progress = new MutableLiveData<>();
         progress.setValue(0L);
         changePlaybackPosition();
         if(mMediaBrowser==null) {
@@ -68,6 +78,30 @@ public class MusicplayViewModel extends AndroidViewModel {
 
     public MutableLiveData<DisplayPlaybackState> getNowPlaybackState() {
         return nowPlaybackState;
+    }
+
+    public MutableLiveData<Integer> getCurrentDataPosition() {
+        return currentDataPosition;
+    }
+
+    public void setCurrentDataPosition(MutableLiveData<Integer> currentDataPosition) {
+        this.currentDataPosition = currentDataPosition;
+    }
+
+    public int getUriListSize() {
+        return dataList.getValue().size();
+    }
+
+    public MutableLiveData<List<MediaMetadataCompat>> getDataList() {
+        return dataList;
+    }
+
+    public void setDataList(MutableLiveData<List<MediaMetadataCompat>> dataList) {
+        this.dataList = dataList;
+    }
+
+    public MediaControllerCompat getController() {
+        return mController;
     }
 
     @Override
@@ -206,6 +240,7 @@ public class MusicplayViewModel extends AndroidViewModel {
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
             if(metadata!=null) {
+                Log.d("==","on metadata changed called: "+metadata.getDescription().toString());
                 DisplayMetadata nowPlayingData = new DisplayMetadata(
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID),
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI),
@@ -214,11 +249,22 @@ public class MusicplayViewModel extends AndroidViewModel {
                         metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION),
                         metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
                 );
-                nowMediaMetadata.setValue(nowPlayingData);
-                progress.setValue(0L);
+                nowMediaMetadata.postValue(nowPlayingData);
+                progress.postValue(0L);
                 DisplayPlaybackState displaystate = nowPlaybackState.getValue();
                 displaystate.setPlaying(true);
-                nowPlaybackState.setValue(displaystate);
+                nowPlaybackState.postValue(displaystate);
+                /*SharedPreferences sp = getApplication().getSharedPreferences("pref",Context.MODE_PRIVATE);
+                int windowPosition = sp.getInt(getApplication().getString(R.string.pref_key_windowPosition),0);
+                currentDataPosition.postValue(windowPosition);*/
+                //dataList.getValue().stream().map();
+                nowPlayingData.getMediaId();
+                int i=0;
+                for(MediaMetadataCompat m: dataList.getValue()) {
+                    if(m.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID).equals(nowPlayingData.getMediaId()))
+                        currentDataPosition.setValue(i);
+                    i++;
+                }
                 mController.getTransportControls().play();
             }
         }
