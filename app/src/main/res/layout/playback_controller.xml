@@ -77,6 +77,7 @@
                 android:layout_weight="1"
                 android:tint="@color/playcontroller_btn_color"
                 android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
+                app:onPressed="@{viewModel.onPressedListener}"
                 style="@style/ExoMediaButton.Previous" />
 
             <ImageButton
@@ -96,6 +97,7 @@
                 android:layout_weight="1"
                 android:tint="@color/playcontroller_btn_color"
                 android:onClick="@{(v)->viewModel.onPlaybackControlBtnClick(v)}"
+                app:onPressed="@{viewModel.onPressedListener}"
                 style="@style/ExoMediaButton.Next" />
 
             <ImageButton

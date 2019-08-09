@@ -17,8 +17,10 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.MusicService;
 import com.proto.musicplayerproto1.MusicplayActivity;
@@ -29,9 +31,13 @@ import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 public class MusicplayViewModel extends AndroidViewModel {
+    private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
+    private static final long DELAY_TIME = 100L;
     //service 관련
     private static MediaControllerCompat mController;
     private static MediaBrowserCompat mMediaBrowser;
@@ -41,16 +47,19 @@ public class MusicplayViewModel extends AndroidViewModel {
     private MutableLiveData<Long> progress = new MutableLiveData<>();
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
+    //rewind, fastforward 구현 관련
+    private Handler handler = new Handler();
+    private boolean forwardRewindFlag = false;
+    private final static long timerTaskDelayTime = 400L;
+    private final static long longPressDuration = timerTaskDelayTime;
+    private Timer timer;
+    private long pressTime;
     //coverflow 관련
     private MutableLiveData<Integer> currentDataPosition = new MutableLiveData<>();
     private MutableLiveData<List<MediaMetadataCompat>> dataList = new MutableLiveData<>();
 
-    //초기값지정시 player와 ViewModel의 nowPlayerbackState 값을 따로 지정해야함. player에 있는 초기 상태를 가져와서 여기서 초기화를 시키거나, 여기서 초기화시킨걸 player 초기값으로 지정하는 식으로 바꿔야함
-    private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
-
     public MusicplayViewModel(@NonNull Application application) {
         super(application);
-        //일단 여기서 브라우저 생성 & 컨트롤러 생성
         Log.d("**","viewmodel 생성");
         currentDataPosition.setValue(0);
         dataList.setValue(new MusicSourceHelper(application.getContentResolver()).getAllMusicList());
@@ -126,7 +135,7 @@ public class MusicplayViewModel extends AndroidViewModel {
                 if(updatePosition)
                     changePlaybackPosition();
             }
-        },100L);
+        },DELAY_TIME);
     }
 
     //원래 정석대로라면 viewModel에서 view객체를 사용하면안됨. viewModel은 view객체가 사용할 데이터만 가져와야하는거. 이건 어떻게 리펙토링해야할지 고민필요
@@ -174,6 +183,69 @@ public class MusicplayViewModel extends AndroidViewModel {
                     mController.getTransportControls().seekTo(position);
             }
         });
+    }
+
+    public View.OnTouchListener getOnPressedListener() {
+        return (new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        pressTime = System.currentTimeMillis();
+                        timer = new Timer(); //timer와 timertask는 재사용이 불가능. 걍 다시쓸때마다 새로 만들어줘야함 개빡침.
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                forwardRewindFlag = true;
+                                if(v.getId() == R.id.exo_next)
+                                    fastForward();
+                                else if(v.getId() == R.id.exo_prev)
+                                    rewind();
+                            }
+                        }, DELAY_TIME);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        pressTime = System.currentTimeMillis() - pressTime;
+                        forwardRewindFlag = false;
+                        timer.cancel();
+                        timer.purge();
+                        if(pressTime >= longPressDuration)// longClick일경우 true를 리턴하여 onClick이 실행안되도록 한다
+                            return true;
+                        break;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void fastForward() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int fastforwardMs = getApplication().getResources().getInteger(R.integer.exoplayer_playback_fastforward_increment_ms);
+                long duration = mController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+                long seekPosition = mController.getPlaybackState().getPosition() + fastforwardMs;
+                if(duration != C.TIME_UNSET)
+                    seekPosition = Math.min(seekPosition, duration);
+                mController.getTransportControls().seekTo(seekPosition);
+                if(forwardRewindFlag)
+                    fastForward();
+            }
+        }, DELAY_TIME);
+    }
+
+    private void rewind() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int rewindMs = getApplication().getResources().getInteger(R.integer.exoplayer_playback_fastforward_increment_ms);
+                long seekPosition = mController.getPlaybackState().getPosition() - rewindMs;
+                mController.getTransportControls().seekTo(Math.max(seekPosition, 0));
+                if(forwardRewindFlag)
+                    rewind();
+            }
+        },DELAY_TIME);
     }
 
     private class MediaBrowserConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
@@ -254,10 +326,6 @@ public class MusicplayViewModel extends AndroidViewModel {
                 DisplayPlaybackState displaystate = nowPlaybackState.getValue();
                 displaystate.setPlaying(true);
                 nowPlaybackState.postValue(displaystate);
-                /*SharedPreferences sp = getApplication().getSharedPreferences("pref",Context.MODE_PRIVATE);
-                int windowPosition = sp.getInt(getApplication().getString(R.string.pref_key_windowPosition),0);
-                currentDataPosition.postValue(windowPosition);*/
-                //dataList.getValue().stream().map();
                 nowPlayingData.getMediaId();
                 int i=0;
                 for(MediaMetadataCompat m: dataList.getValue()) {

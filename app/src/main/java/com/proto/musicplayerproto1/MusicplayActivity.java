@@ -33,19 +33,11 @@ public class MusicplayActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_musicplay);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             checkPermissions();
         }
 
-        //viewModel = new CustomViewModelFactory(getApplication()).create(MusicplayViewModel.class);//이렇게 하면 onCleared안불러짐. 왜그런지는 모르겠음
-        //viewModel = CustomViewModelFactory.getInstance(getApplication()).create(MusicplayViewModel.class);//얘도 안불러와짐
-        //예상원인. 그냥 ViewModelFactory로 생성한 viewmodel은 ViewModelStore가 포함되지않음.
-        //ViewModelStore은 엑티비티/프래그먼트의 viewmodel들을 갖고있는 클래스로써 viewmodelstore의 오너인 엑티비티/프래그먼트가 소멸시 clear()를 호출하여 viewmodel의 oncleared함수가 호출되도록함
-        //Q. 그럼 우리가 커스텀한 ViewModelFactory에서 ViewModelStore를 생성해서 사용하면 되지않나여?
-        // 근데 ViewModelStore에서 생명주기관리할 viewmodel을 저장하고불러오는 함수인 get,put함수는 접근제어자가 default로 지정되어있음. 즉 같은 패키지내에서만 사용이 가능한 함수
-        // 그래서 우리가 사용할수있는건 public으로 지정된 clear함수뿐임(근데 무용지물. activity/fragment 패키지에서 사용하기위해 내놓은거지 개발자가 사용하라고 만들어놓은게 아님)
         Log.d("**","onCreated");
         viewModel = ViewModelProviders.of(this).get(MusicplayViewModel.class);
         ActivityMusicplayBinding binding = DataBindingUtil.setContentView(MusicplayActivity.this, R.layout.activity_musicplay);
@@ -61,13 +53,10 @@ public class MusicplayActivity extends AppCompatActivity {
 
         viewModel.getCurrentDataPosition().observe(this, new Observer<Integer>() {
             @Override
-            public void onChanged(@Nullable Integer integer) {
-                //coverflow -> player
-                Log.d("==","dataposition onchanged");
+            public void onChanged(@Nullable Integer integer) {//coverflow -> player
                 MediaControllerCompat controller = viewModel.getController();
-                if(controller!=null){
+                if(controller!=null)
                     controller.getTransportControls().skipToQueueItem(integer);
-                }
             }
         });
     }

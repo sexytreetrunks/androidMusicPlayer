@@ -4,6 +4,7 @@ import android.databinding.BindingAdapter;
 import android.net.Uri;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -61,5 +62,10 @@ public class UIBindingAdapters {
             textView.setText(text);
             textView.setSelected(true);
         }
+    }
+
+    @BindingAdapter("app:onPressed")
+    public static void addOnPressedListener(ImageButton button, View.OnTouchListener listener) {
+        button.setOnTouchListener(listener);
     }
 }

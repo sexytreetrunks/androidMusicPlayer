@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="exoplayer_playback_fastforward_increment_ms">4000</integer>
+    <integer name="exoplayer_playback_rewind_increment_ms">4000</integer>
+</resources>
