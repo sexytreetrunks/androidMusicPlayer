@@ -50,7 +50,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     //rewind, fastforward 구현 관련
     private Handler handler = new Handler();
     private boolean forwardRewindFlag = false;
-    private final static long timerTaskDelayTime = 400L;
+    private final static long timerTaskDelayTime = 800L;
     private final static long longPressDuration = timerTaskDelayTime;
     private Timer timer;
     private long pressTime;
