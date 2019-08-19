@@ -4,20 +4,16 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.service.media.MediaBrowserService;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -25,9 +21,8 @@ import android.util.Log;
 
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
-import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
-import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
 import com.proto.musicplayerproto1.model.player.MusicPlaybackPreparer;
+import com.proto.musicplayerproto1.model.player.MyQueueNavigator;
 import com.proto.musicplayerproto1.model.player.PlayerHolder;
 import com.proto.musicplayerproto1.model.player.PlayerState;
 
@@ -65,13 +60,7 @@ public class MusicService extends MediaBrowserServiceCompat {
 
     private MediaSessionConnector createMediaSessionConnector() {
         MediaSessionConnector connector = new MediaSessionConnector(session);
-        connector.setQueueNavigator((MediaSessionConnector.QueueNavigator) new TimelineQueueNavigator(session) {
-            @Override
-            public MediaDescriptionCompat getMediaDescription(Player player, int windowIndex) {
-                Object obj = player.getCurrentTag();
-                return (MediaDescriptionCompat)obj;
-            }
-        });
+        connector.setQueueNavigator(new MyQueueNavigator(session));
         MusicPlaybackPreparer playbackPreparer = new MusicPlaybackPreparer(player.getPlayer(), this);
         connector.setPlayer(player.getPlayer(), playbackPreparer);
         return connector;

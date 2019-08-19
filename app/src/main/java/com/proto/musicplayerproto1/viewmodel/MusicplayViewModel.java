@@ -3,15 +3,12 @@ package com.proto.musicplayerproto1.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.Observer;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -23,17 +20,14 @@ import android.view.View;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ui.TimeBar;
 import com.proto.musicplayerproto1.MusicService;
-import com.proto.musicplayerproto1.MusicplayActivity;
 import com.proto.musicplayerproto1.R;
 import com.proto.musicplayerproto1.model.data.DisplayMetadata;
 import com.proto.musicplayerproto1.model.data.DisplayPlaybackState;
 import com.proto.musicplayerproto1.model.data.MusicSourceHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.stream.Collectors;
 
 public class MusicplayViewModel extends AndroidViewModel {
     private static final DisplayPlaybackState DEFAULT_PLAYBACK_STATE = new DisplayPlaybackState(true, false, PlaybackStateCompat.REPEAT_MODE_ALL);
@@ -48,7 +42,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     private boolean updatePosition = true;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
     //rewind, fastforward 구현 관련
-    private Handler handler = new Handler();
+    private Handler forwardRewindHandler = new Handler();
     private boolean forwardRewindFlag = false;
     private final static long timerTaskDelayTime = 800L;
     private final static long longPressDuration = timerTaskDelayTime;
@@ -220,7 +214,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     }
 
     private void fastForward() {
-        handler.postDelayed(new Runnable() {
+        forwardRewindHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 int fastforwardMs = getApplication().getResources().getInteger(R.integer.exoplayer_playback_fastforward_increment_ms);
@@ -236,7 +230,7 @@ public class MusicplayViewModel extends AndroidViewModel {
     }
 
     private void rewind() {
-        handler.postDelayed(new Runnable() {
+        forwardRewindHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 int rewindMs = getApplication().getResources().getInteger(R.integer.exoplayer_playback_fastforward_increment_ms);
@@ -335,6 +329,23 @@ public class MusicplayViewModel extends AndroidViewModel {
                 }
                 mController.getTransportControls().play();
             }
+        }
+    }
+
+    public class MyRunnable implements Runnable {
+        private int viewId;
+
+        public void setViewId(int viewId) {
+            this.viewId = viewId;
+        }
+
+        @Override
+        public void run() {
+            forwardRewindFlag = true;
+            if(viewId == R.id.exo_next)
+                fastForward();
+            else if(viewId == R.id.exo_prev)
+                rewind();
         }
     }
 }
